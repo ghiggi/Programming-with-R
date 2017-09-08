@@ -256,6 +256,19 @@ tapply(pulse,  f_list, mean)
 tapply2(pulse, f_list, mean)
 tapply3(pulse, f_list, mean)
 
+## Compute obs for each cell 
+tapply(iris$Sepal.Length, iris$Species, function(x) x)
+tapply(warpbreaks$breaks, warpbreaks[,c(2,3)], function(x) x)
+tapply(warpbreaks$breaks, warpbreaks[,c(2,3)], length)
+
+########
+## by ##
+########
+# An object-oriented wrapper for 'tapply' applied to data frames (iterate to the other columns)
+by(iris[, 1:4], iris$Species, function(x) x)
+by(iris[, 1:4], iris$Species, colMeans)
+by(iris[, 1:4], iris$Species, summary)
+
 ############ 
 ## Reduce ##
 ############
