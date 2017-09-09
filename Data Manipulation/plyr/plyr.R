@@ -170,27 +170,98 @@ arrange(myCars, cyl, desc(disp))
 count(baseball[1:100,], vars = "id")
 count(baseball[1:100,], c("id", "year"))
  
+############################
+## revalue() & mapvalues() #
+############################
+library(plyr)
+# Replace specified values with new values
+# - revalues() : works for factor or character vector
+# - mapvalues(): works also for numeric vector 
+x <- c("a", "b", "c")
+revalue(x, c(a = "A", c = "C"))
+mapvalues(x, from=c("a", "c"), to=c("A", "C"))
+revalue(x, c("a" = "A", "c" = "C"))
+mapvalues(x, from=c("a", "c"), to=c("A", "C"))
 
-join    	 Join two data frames together.
-join_all   Recursively join a list of data frames.
-
-
-
-match_df
+y <- factor(c("a", "b", "c", "a"))
+revalue(y, c(a = "A", c = "C"))
+mapvalues(y, from=c("a", "c"), to=c("A", "C"))
  
-revalue	Replace specified values with new values, in a factor or character vector.
-mapvalues 
+# mapvalues() on numeric vectors
+z <- c(1, 4, 5, 9)
+mapvalues(z, from = c(1, 5, 9), to = c(10, 50, 90))
 
-take	Take a subset along an arbitrary dimension
-vaggregate	Vector aggregate
+##########
+# Take() # take(x, along, indices, drop = FALSE)
+##########
+# Take a subset along an arbitrary dimension of matrix or arrays
+# - along	: dimension to subset along
+# - indices	: the indices to select
+x <- array(seq_len(3 * 4 * 5), c(3, 4, 5))
+take(x, 3, 1)
+take(x, 2, 1)
+take(x, 1, 1)
+take(x, 3, 1, drop = TRUE)
+take(x, 2, 1, drop = TRUE)
+take(x, 1, 1, drop = TRUE)
 
-rbind.fill	Combine data.frames by row, filling in missing columns.
-rbind.fill.matrix	Bind matrices by row, and fill missing columns with NA
+#################
+## vaggregate() #
+#################
+# - Somewhat similar to tapply
+# - It only accepts a single grouping vector (use id if you have more) and uses vapply internally 
+# - vaggregate is faster than tapply in most situations because it avoids making a copy of the data
 
+# Some examples of use borrowed from ?tapply
+n <- 17;
+x = 1:n
+fac <- factor(rep(1:3, length.out = n), levels = 1:5)
+table(fac)
+vaggregate(x, .group = fac, sum)
+vaggregate(x, .group = fac, sum, .default = NA_integer_)     # default value used for missing groups
+vaggregate(x, .group = fac, range)
 
+vaggregate(x, .group = fac, range, .default = c(NA, NA) + 0) # default value used for missing groups
+vaggregate(x, .group = fac, quantile)
+tapply(x, fac, range)
+tapply(x, fac, quantile)
 
+# Unlike tapply, vaggregate does not support multi-group output:
+# - use id() if multiple grouping variables 
+tapply(warpbreaks$breaks, warpbreaks[,-1], sum)
+vaggregate(warpbreaks$breaks, id(warpbreaks[,-1]), sum)
 
+#################
+## rbind.fill() #
+#################
+# - Combine list of data.frames by row, filling missing colmuns with NA
+# - Adds in columns that are not present in all inputs
+# - Accepts a list of data frames, and operates substantially faster than rbind 
+rbind.fill(mtcars[c("mpg", "wt")], mtcars[c("wt", "cyl")])
+ 
+########################
+## rbind.fill.matrix() # 
+########################
+# - Bind matrices by row, and fill missing columns with NA.
+# - Matrices are bound together using their column names or the column indices
+# - If a matrix doesn't have colnames, the column number is used. 
+# Details 
+# - Row names are ignored ! 
+A <- matrix (1:4, 2)
+B <- matrix (6:11, 2)
+A
+B
+rbind.fill.matrix (A, B)
+rbind.fill.matrix (A, 99)
 
+colnames(A) <- c(3, 1)
+A
+rbind.fill.matrix (A, B) # If the second matrix (B) has no colnames, column indices are used ! 
+rbind.fill.matrix (B, A) # A column with name "1" is merged with the first column of a matrix without name !
+
+colnames(B) <- c(1,2,3)
+B
+rbind.fill.matrix (A, B)
 
 
 
