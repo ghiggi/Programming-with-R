@@ -16,14 +16,18 @@
 # 
 # replace_na	Replace missing values
 # 
-# separate	Separate one column into multiple columns.
-# separate_rows	Separate a collapsed column into multiple rows.
+# separate	      Separate one column into multiple columns.
+# separate_rows	  Separate a collapsed column into multiple rows.
 # separate_rows_	Standard-evaluation version of 'separate_rows'.
 # 
 # 
-# spread	Spread a key-value pair across multiple columns.
+# spread	       Spread a key-value pair across multiple columns.
 # 
 #  
 # unite	Unite multiple columns into one.
 # unnest	Unnest a list column.
 #  
+
+library(tidyverse)
+lists all the conflicts between packages in the tidyverse and other packages that you have loaded.
+tidyverse_conflicts()
