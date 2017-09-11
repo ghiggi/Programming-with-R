@@ -71,6 +71,11 @@ tibble(a = integer(), b = 1)
 # - Tibbles allow to have list-columns:
 tibble(x = 1:3, y = list(1:5, 1:10, 1:20))
 
+# - Print all rows
+df <- tibble(x = 1:3, y = list(1:5, 1:10, 1:20))
+df %>% select(everything())  %>% 
+       print(n = Inf)   # to print all ! 
+
 ###############
 # as_tibble() #
 ###############

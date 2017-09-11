@@ -72,7 +72,7 @@ select(flights, identity(year), "day")
 select(flights, !! year)
 
 ##############
-## Filter() ##
+## filter() ##
 ##############
 # - Select rows based on their values/character/level (logical condition)
 # - Can deal with any number of filtering condition.
@@ -96,7 +96,7 @@ filter(air_quality, Day < 5 | !is.na(Day))
 # && and || must not be used in filter (). They must be used only in conditional execution !!!
 
 ##############
-## Mutate() ##
+## mutate() ##
 ##############
 # - Allow to add new variables that are functions of existing variables
 # - Allow also to transform existing variables  
@@ -124,13 +124,13 @@ df %>% mutate(dep_morning = NULL)
 
 # Quasiquotation.
 # - Unquote quosures, which can refer to both contextual variables and variable names:
-var <- 100
-mutate(flights, time = !! quo(time * var)) #?????????????????????????????????????????????????????????????
-
-
+year <- 100
+day= 5
+mutate(flights, day = day * year)
+mutate(flights, day = !! (day * year)) # use contextual variables 
 
 ###############
-# Transmute() #
+# transmute() #
 ###############
 # Works as mutate but keep only the new variables created
 transmute(flights,
@@ -138,57 +138,123 @@ transmute(flights,
           hours = air_time / 60,
           gain_per_hour = gain / hours)
   
-##############
-## Group by ##
-##############
-group_by()
-has mutate semantics
-it allows to group by a modified column
-# first create (or substitute existing) variable and then group by 
+################
+## group_by() ##
+################
+# - Takes an existing tibble or data.frame and converts it into a grouped tbl 
+# - Following operations are performed "by group".
+# - Grouping doesn't change how data looks 
+# - group_by() overrides existing grouping
+
+# First create (or select existing) variable and then group by 
+df <- flights
 group_by(df, month)
 group_by(df, month = as.factor(month))
 group_by(df, day_binned = cut(day, 3))
 
-group_by_at() 
-# select semantics
-wrap the selection with vars()
-group_by_at(df, vars(year:day))
-group_by_if
+# Retrieve the grouping variables 
+df_g <- group_by(df, year, month, day)
+group_vars(df_g) # returns a character vector 
+groups(df_g)     # return a list of symbols 
 
-When you group by multiple variables, each summary peels off one level of the grouping. 
-That makes it easy to progressively roll up a dataset:
-# following operatations applies within each group of the last grouping variable 
+# Subsequent group_by() calls overrides existing grouping
+df_g <- group_by(df_g, year, day)
+group_vars(df_g)
 
-  
-  
-  
-  
-#Whenever you do any aggregation, it's always a good idea to include
-# count (n()), or a count of non-missing values (sum(!is.na(x)))
-  # count the number of distinct (unique) values, use n_distinct(x)
-# That way you can check that you're not drawing conclusions based on very small amounts of data
-
+## Removes grouping with ungroup() 
+group_vars(ungroup(df_g))
  
-  # When you group by multiple variables, each summary peels off one level of the grouping.
-  # That makes it easy to progressively roll-up a dataset:
-  # Very useful form for sums and counts,
-# Require think about weighting for means and variances 
+# Each call to summarise() remove a layer of grouping 
+# - When you group by multiple variables, each summary peels off one level of the grouping.
+# - The summarise function applies within each level of the last grouping variable 
+# - This makes it easy to progressively roll-up a dataset 
 flights
 daily <- group_by(flights, year, month, day)
 (per_day   <- summarise(daily, flights = n()))
 (per_month <- summarise(per_day, flights = sum(flights)))
 (per_year  <- summarise(per_month, flights = sum(flights)))
 
-you can group by row with rowwise.
-
-# ungroup()
+## Whenever you do any aggregation, it's always a good idea to include
+# - count of all observation (NA included) in each group : n() 
+# - count of non-missing values :   sum(!is.na(x))
+# - count the number of distinct (unique) values/characters: n_distinct(x)
+# --> In that way it is possible to check that conclusions are not based on very small amounts of data
 
 #################
 ## Summarise() ##
 #################
-condense multiple values to a single value.
-mainly useful with data that has been grouped by one or more variable
-provides aggregation to summarise each group.
+# - Condense multiple values to a single value.
+# - Usually applied after that data that has been grouped by one or more variable
+# - Provides aggregation to summarise each group.
+
+# A summary applied to ungrouped tbl returns a single row
+mtcars %>%  summarise(mean = mean(disp), n = n())
+
+# Usually, you'll want to group first
+mtcars %>%  group_by(cyl) %>% summarise(mean = mean(disp), n = n())
+
+# Each summary call removes one grouping level (since that group become a single row)
+mtcars %>%  group_by(cyl, vs) %>%
+            summarise(cyl_n = n()) %>%
+             group_vars()
+
+# summarise(n=n()) perform same work as table 
+mtcars %>%  group_by(cyl) %>%
+            summarize(n = n())
+table(mtcars$cyl)
+
+####################
+## Scoped variants #
+####################
+?scoped
+group_by_at(df, vars(year:day))
+group_by_if
+
+
+
+ 
+# arrange_all	Arrange rows by a selection of variables
+# arrange_at	Arrange rows by a selection of variables
+# arrange_if	Arrange rows by a selection of variables
+.by_group = TRUE, in which case it orders first by the grouping variables
+
+ 
+# rename_all	Select and rename a selection of variables
+# rename_at	Select and rename a selection of variables
+# rename_if	Select and rename a selection of variables
+
+ 
+# filter_all	Filter within a selection of variables
+# filter_at	Filter within a selection of variables
+# filter_if	Filter within a selection of variables
+
+ 
+# mutate_all	Summarise and mutate multiple columns.
+# mutate_at	Summarise and mutate multiple columns.
+# mutate_if	Summarise and mutate multiple columns.
+# - allows you to refer to columns that you've just created
+
+ 
+# transmute_all	Summarise and mutate multiple columns.
+# transmute_at	Summarise and mutate multiple columns.
+# transmute_if	Summarise and mutate multiple columns.
+
+ 
+# summarise_all	Summarise and mutate multiple columns.
+# summarise_at	Summarise and mutate multiple columns.
+# summarise_if	Summarise and mutate multiple columns.
+# summarize	Reduces multiple values down to a single value
+# summarize_all	Summarise and mutate multiple columns.
+# summarize_at	Summarise and mutate multiple columns.
+# summarize_if	Summarise and mutate multiple columns.
+
+ 
+# group_by	Group by one or more variables
+# group_by_all	Group by a selection of variables
+# group_by_at	Group by a selection of variables
+# group_by_if	Group by a selection of variables
+
+column-wise operations: mutate_each, summarise_each
 
 summarize_each() applies the same summary function(s) to multiple variables.
 my_gap %>%
@@ -196,26 +262,8 @@ my_gap %>%
   group_by(continent, year) %>%
   summarise_each(funs(mean, median), lifeExp, gdpPercap)
 
-
-
-
-my_gap %>%
-  group_by(continent) %>%
-  summarize(n = n())
-table(gapminder$continent)
-my_gap %>%
-  group_by(continent) %>%
-  tally()
-my_gap %>% 
-  count(continent)
-
-n_distinct() 
-# count the number of distinct variable levels inside a group
-ends_with() = Select columns that end with a character string
-starts_with() = Select columns that start with a character string
-matches() = Select columns that match a regular expression
-one_of() = Select columns names that are from a group of names
-
-
-
+# vars	Select variables
+#  Quasiquotation. You can unquote raw expressions or quosures:
+var <- quo(mean(cyl))
+summarise(mtcars, !! var)
 
