@@ -104,8 +104,6 @@ replace = TRUE to perform a bootstrap sample
 # top_n	Select top (or bottom) n rows (by value)
 
 # all_equal	Flexible equality comparison for data frames
-# all_vars	Apply predicate to all variables
-# any_vars	Apply predicate to all variables
 
 # add_count	Count/tally observations by group
 # add_tally	Count/tally observations by group
@@ -122,6 +120,11 @@ flights %>%
 # pull	Pull out a single variable
 
 
+
+
+#  Quasiquotation. You can unquote raw expressions or quosures:
+var <- quo(mean(cyl))
+summarise(mtcars, !! var)
 
 ##########
 ## do() ##
@@ -163,18 +166,7 @@ do: arbitrary code on each chunk
 #  challenge of constantly switching between language
 
 
-#---------------------------------------------------------------------------
-join tables together: left_join, right_join, inner_join, full_join
-filtering joins: semi_join, anti_join
-# join	Join two tbls together
-# anti_join	Join two tbls together
-# full_join	Join two tbls together
-# inner_join	Join two tbls together
-# intersect	Set operations
-# left_join	Join two tbls together
-# right_join	Join two tbls together
-# semi_join	Join two tbls together
- 
+
 #---------------------------------------------------------------------------
 # union	    Set operations
 # union_all	Set operations

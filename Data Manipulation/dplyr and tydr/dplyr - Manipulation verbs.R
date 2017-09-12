@@ -198,7 +198,7 @@ mtcars %>%  group_by(cyl, vs) %>%
             summarise(cyl_n = n()) %>%
              group_vars()
 
-# summarise(n=n()) perform same work as table 
+# summarise(n=n()) perform same work as table()
 mtcars %>%  group_by(cyl) %>%
             summarize(n = n())
 table(mtcars$cyl)
@@ -206,64 +206,90 @@ table(mtcars$cyl)
 ####################
 ## Scoped variants #
 ####################
-?scoped
-group_by_at(df, vars(year:day))
-group_by_if
+# The variants suffixed with _if, _at or _all apply an expression (sometimes several)
+#  to all variables within a specified subset.  
+# The subset can contain :
+# - all variables : _all variants , 
+# - a vars() selection : _at variants
+# - variables selected with a predicate : _if variants 
 
+## Manipulation verbs suffixed with _all()
+# - apply an operation on all variables
 
+## Manipulation verbs suffixed with _at()
+# - apply an operation on a subset of variables 
+# - variables can be specified with 
+#    * the quoting function vars() --> list of column symbols
+#    * a integer vector of column position 
+#    * a character vector of column names 
 
+## Manipulation verbs suffixed with _if()
+# - apply an operation on the subset of variables for which 
+#   * a predicate function returns TRUE 
+#   * a logical vector indicate which variables to select 
+
+## select_  and rename_ 
+rename_all(mtcars, toupper)
+rename_all(mtcars, toupper)
+rename_all(mtcars, "toupper")
+rename_all(mtcars, funs(toupper(.)))
+select_at(mtcars, vars(starts_with("d")))  
+select_at(mtcars, vars(starts_with("d")), toupper)
+rename_at(mtcars, vars(starts_with("d")), toupper)
+is_whole <- function(x) all(floor(x) == x)
+select_if(mtcars, is_whole)           # the renaming function is optional for select() 
+select_if(mtcars, is_whole, toupper)  # drop unselected variables 
+rename_if(mtcars, is_whole, toupper)  # maintain unselected variables 
+
+## arrange_
+arrange_all(mtcars, desc)
+arrange_all(mtcars, funs(desc(.)))
+arrange_at(mtcars, vars(starts_with("d")), desc)
+arrange_at(mtcars, c("disp", "drat"), desc)
+arrange_at(mtcars, c(4,5), desc)
+arrange_if(mtcars, is_whole, desc)
+arrange_if(mtcars, ~ all(floor(.) == .), desc)
+
+## filter_ 
+#  Scoped filter verbs require an expression with the pronoun `.` and replicate it over all selected variables. 
+#  The predicate expression should be quoted with all_vars() or any_vars() 
+all_vars(is.na(.))
+any_vars(is.na(.))
+# Take the intersection of the replicated expressions 
+filter_all(mtcars, all_vars(. > 150))
+# Take the union of the replicated expressions 
+filter_all(mtcars, any_vars(. > 150))
+# Select the columns on which to apply the predicate by their name (or position) 
+filter_at(mtcars, vars(starts_with("d")), any_vars((. %% 2) == 0))
+# Select variables with a predicate function:
+filter_if(mtcars, ~ all(floor(.) == .), all_vars(. != 0))
+
+## mutate_     
+by_species <- iris %>% group_by(Species)
+by_species %>% mutate_all(funs(. / 2.54))       # replace existing variables 
+by_species %>% mutate_all(funs(cm = . / 2.54))  # add as new variables 
+iris %>% mutate_at(vars(contains("Width"), contains("Length")), funs(. / 2.54))       # replace existing variables 
+iris %>% mutate_at(vars(contains("Width"), contains("Length")), funs(cm = . / 2.54))  # add as new variables 
+iris %>% mutate_if(is.numeric, funs(. / 2.54))       # replace existing variables 
+iris %>% mutate_if(is.numeric, funs(cm = . / 2.54))  # add as new variables 
+# mutate_if is particularly useful for transforming variables from one type to another
+iris %>% as_tibble() %>% mutate_if(is.factor, as.character)
+iris %>% as_tibble() %>% mutate_if(is.double, as.integer)
  
-# arrange_all	Arrange rows by a selection of variables
-# arrange_at	Arrange rows by a selection of variables
-# arrange_if	Arrange rows by a selection of variables
-.by_group = TRUE, in which case it orders first by the grouping variables
+## summarise_   
+by_species <- iris %>% group_by(Species)
+by_species %>% summarise_all( funs(min, max))
+by_species %>% summarise_all( c("min", "max"))
+by_species %>% summarise_all( funs(med = median))
+by_species %>% summarise_all( funs(Q3 = quantile), probs = 0.75)
+by_species %>% summarise_at( vars(starts_with("Petal")), funs(med = median))
+by_species %>% summarise_at( vars(Sepal.Length:Petal.Width), funs(med = median))
+iris %>% summarise_if(is.numeric, mean, na.rm = TRUE)
 
- 
-# rename_all	Select and rename a selection of variables
-# rename_at	Select and rename a selection of variables
-# rename_if	Select and rename a selection of variables
-
- 
-# filter_all	Filter within a selection of variables
-# filter_at	Filter within a selection of variables
-# filter_if	Filter within a selection of variables
-
- 
-# mutate_all	Summarise and mutate multiple columns.
-# mutate_at	Summarise and mutate multiple columns.
-# mutate_if	Summarise and mutate multiple columns.
-# - allows you to refer to columns that you've just created
-
- 
-# transmute_all	Summarise and mutate multiple columns.
-# transmute_at	Summarise and mutate multiple columns.
-# transmute_if	Summarise and mutate multiple columns.
-
- 
-# summarise_all	Summarise and mutate multiple columns.
-# summarise_at	Summarise and mutate multiple columns.
-# summarise_if	Summarise and mutate multiple columns.
-# summarize	Reduces multiple values down to a single value
-# summarize_all	Summarise and mutate multiple columns.
-# summarize_at	Summarise and mutate multiple columns.
-# summarize_if	Summarise and mutate multiple columns.
-
- 
-# group_by	Group by one or more variables
-# group_by_all	Group by a selection of variables
-# group_by_at	Group by a selection of variables
-# group_by_if	Group by a selection of variables
-
-column-wise operations: mutate_each, summarise_each
-
-summarize_each() applies the same summary function(s) to multiple variables.
-my_gap %>%
-  filter(year %in% c(1952, 2007)) %>%
-  group_by(continent, year) %>%
-  summarise_each(funs(mean, median), lifeExp, gdpPercap)
-
-# vars	Select variables
-#  Quasiquotation. You can unquote raw expressions or quosures:
-var <- quo(mean(cyl))
-summarise(mtcars, !! var)
-
+## group_by_ 
+# - have optional mutate semantics (shortcut for group_by() + mutate())
+group_by_all(mtcars) # group a data frame by all variables
+group_by_all(mtcars, as.factor) # convert all variable as factors and then group_by
+group_by_at(mtcars, vars(vs, am))
+group_by_if(iris, is.factor) # group a data frame by all factor variables 
+group_by_if(iris, is.factor, as.character) # convert factor variable to character and then group_by
