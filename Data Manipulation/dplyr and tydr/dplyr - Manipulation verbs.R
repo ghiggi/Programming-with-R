@@ -141,10 +141,12 @@ transmute(flights,
 ################
 ## group_by() ##
 ################
-# - Takes an existing tibble or data.frame and converts it into a grouped tbl 
+# - Takes an existing tibble or data.frame and converts it into a grouped_df 
+# - A grouped_df can be thought of as a list where each item in the list is a data.frame 
+#   which contains only the rows that correspond to the level of the factor variable in group_by
 # - Following operations are performed "by group".
 # - Grouping doesn't change how data looks 
-# - group_by() overrides existing grouping
+# - group_by() overrides existing grouping 
 
 # First create (or select existing) variable and then group by 
 df <- flights
@@ -203,6 +205,10 @@ mtcars %>%  group_by(cyl) %>%
             summarize(n = n())
 table(mtcars$cyl)
 
+mtcars %>% group_by(cyl) %>%
+           select(mpg) %>%
+           table()  
+  
 ####################
 ## Scoped variants #
 ####################
@@ -293,3 +299,26 @@ group_by_all(mtcars, as.factor) # convert all variable as factors and then group
 group_by_at(mtcars, vars(vs, am))
 group_by_if(iris, is.factor) # group a data frame by all factor variables 
 group_by_if(iris, is.factor, as.character) # convert factor variable to character and then group_by
+
+##########
+## do() ##
+##########
+# - do() is similar to dlply())
+# - create a tibble with a column-list 
+mtcars %>% group_by(cyl) %>% do(head(.,2))
+models <- mtcars %>% group_by(cyl) %>%
+  do(lm = lm(mpg ~ wt, data = .))
+models %>%  summarise(rsq = summary(lm)$r.squared)
+
+models %>% do( data.frame(var = names(coef(.$lm)),
+                          coefs= coef(summary(.$lm))))
+
+## Create a tibble with a column-list of model fits 
+library(mgcv)
+by_dest <- flights %>% group_by(dest) %>% filter(n() > 100)
+by_dest %>% do(smooth = gam(arr_delay ~ s(dep_time) + month, data = .))
+
+# rowwise() 
+# - Is used for the results of do() when you create list-variables
+# - Group input by rows
+

@@ -48,6 +48,10 @@ options(tibble.print_max = n, tibble.print_min = m)  # If there are more than n 
 options(tibble.print_max = Inf) # show all rows
 options(tibble.width = Inf)     # print all columns 
 
+# - Inspect tibbles 
+df
+glimpse(df)
+
 # - Subsetting tibbles always return tibbles (and not vectors !)
 tibbles ignore the drop argument 
 data.frame(a = 1:3)[, "a"]  
