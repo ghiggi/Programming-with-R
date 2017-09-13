@@ -173,3 +173,5 @@ z <- c(NA, NA, 3, 4, 4) # substitute NA with values of this vector (at the same 
 coalesce(y, z)
 
 ## recode()
+
+################################################################################

@@ -5,17 +5,8 @@ join    	 #  Join two data frames together.
 join_all   #  Recursively join a list of data frames.
 match_df
 
-########### 
-# dyplr ##
-##########
-# combine  	Efficiently bind multiple data frames by row and column
-# bind     	Efficiently bind multiple data frames by row and column
-# bind_cols	Efficiently bind multiple data frames by row and column
-# bind_rows	Efficiently bind multiple data frames by row and column
-# rbind_all	Efficiently bind multiple data frames by row and column
-# rbind_list	Efficiently bind multiple data frames by row and column
-
-
+ 
+ 
 #############
 ## reshape2 #
 #############
