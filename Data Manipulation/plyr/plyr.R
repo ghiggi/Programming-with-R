@@ -104,30 +104,6 @@ each("min", "max")(1:10)
 each(c("min", "max"))(1:10)
 each(c(min, max))(1:10)
 
-################
-# summarise()  #
-################
-# Returns the modified/new columns in a new data frame
-summarise(baseball, duration = max(year) - min(year),
-                    nteams = length(unique(team)))
-# Very useful for creating group-wise summaries
-ddply(baseball, "id", summarise, duration = max(year) - min(year),
-                                 nteams = length(unique(team)))
-
-#############
-# mutate()  #
-#############
-# Add the modified/new columns to the original data frame
-# Mutate is faster than transform
-# Modify existing variable in the data.frame
-mutate(airquality, Ozone = -Ozone)
-# Add new variable to the data.frame
-mutate(airquality, new = -Ozone, Temp = (Temp - 32) / 1.8)
-
-# Executes the transformations iteratively so that later transformations 
-#   can use the columns created by earlier transformations.
-mutate(airquality, Temp = (Temp - 32) / 1.8, OzT = Ozone / Temp) # Use the Temp converted previously ! 
- 
 ##############
 # failwith() #
 ##############
@@ -151,24 +127,6 @@ as.quoted(c("a", "b", "c"))
 
 .(first = a, second = b, third = c)
 as.quoted(c(first="a", second="b", third="c"))
-
- 
-###############
-## arrange() ##
-###############
-# Reordering a data.frame by its columns
-# Do not preserve row.names !!!
-mtcars[with(mtcars, order(cyl, disp)), ]
-arrange(mtcars, cyl, disp)   
-arrange(myCars, cyl, desc(disp))
-
-############
-## count() #
-############
-# Equivalent to as.data.frame(table(x)), but does not include combinations with zero counts.
-# Count the occurence (frequency) of "vars"  
-count(baseball[1:100,], vars = "id")
-count(baseball[1:100,], c("id", "year"))
  
 ############################
 ## revalue() & mapvalues() #
@@ -211,7 +169,6 @@ take(x, 1, 1, drop = TRUE)
 # - Somewhat similar to tapply
 # - It only accepts a single grouping vector (use id if you have more) and uses vapply internally 
 # - vaggregate is faster than tapply in most situations because it avoids making a copy of the data
-
 # Some examples of use borrowed from ?tapply
 n <- 17;
 x = 1:n
@@ -231,38 +188,45 @@ tapply(x, fac, quantile)
 tapply(warpbreaks$breaks, warpbreaks[,-1], sum)
 vaggregate(warpbreaks$breaks, id(warpbreaks[,-1]), sum)
 
-#################
-## rbind.fill() #
-#################
-# - Combine list of data.frames by row, filling missing colmuns with NA
-# - Adds in columns that are not present in all inputs
-# - Accepts a list of data frames, and operates substantially faster than rbind 
-rbind.fill(mtcars[c("mpg", "wt")], mtcars[c("wt", "cyl")])
- 
-########################
-## rbind.fill.matrix() # 
-########################
-# - Bind matrices by row, and fill missing columns with NA.
-# - Matrices are bound together using their column names or the column indices
-# - If a matrix doesn't have colnames, the column number is used. 
-# Details 
-# - Row names are ignored ! 
-A <- matrix (1:4, 2)
-B <- matrix (6:11, 2)
-A
-B
-rbind.fill.matrix (A, B)
-rbind.fill.matrix (A, 99)
+################################################################################
+# The following functions are now part of dplyr
+###############
+## arrange() ##
+###############
+# Reordering a data.frame by its columns
+# Do not preserve row.names !!!
+mtcars[with(mtcars, order(cyl, disp)), ]
+arrange(mtcars, cyl, disp)   
+arrange(myCars, cyl, desc(disp))
 
-colnames(A) <- c(3, 1)
-A
-rbind.fill.matrix (A, B) # If the second matrix (B) has no colnames, column indices are used ! 
-rbind.fill.matrix (B, A) # A column with name "1" is merged with the first column of a matrix without name !
+#############
+# mutate()  #
+#############
+# Add the modified/new columns to the original data frame
+# Mutate is faster than transform
+# Modify existing variable in the data.frame
+mutate(airquality, Ozone = -Ozone)
+# Add new variable to the data.frame
+mutate(airquality, new = -Ozone, Temp = (Temp - 32) / 1.8)
 
-colnames(B) <- c(1,2,3)
-B
-rbind.fill.matrix (A, B)
+# Executes the transformations iteratively so that later transformations 
+#   can use the columns created by earlier transformations.
+mutate(airquality, Temp = (Temp - 32) / 1.8, OzT = Ozone / Temp) # Use the Temp converted previously ! 
 
+################
+# summarise()  #
+################
+# Returns the modified/new columns in a new data frame
+summarise(baseball, duration = max(year) - min(year),
+          nteams = length(unique(team)))
+# Very useful for creating group-wise summaries
+ddply(baseball, "id", summarise, duration = max(year) - min(year),
+      nteams = length(unique(team)))
 
-
- 
+############
+## count() #
+############
+# Equivalent to as.data.frame(table(x)), but does not include combinations with zero counts.
+# Count the occurence (frequency) of "vars"  
+count(baseball[1:100,], vars = "id")
+count(baseball[1:100,], c("id", "year"))

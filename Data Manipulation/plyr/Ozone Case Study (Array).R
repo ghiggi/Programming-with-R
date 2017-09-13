@@ -96,7 +96,7 @@ ggplot(stars_res , aes(x = long + res * x, y = lat + res * y)) +
   map + 
   geom_path(aes(group = interaction(long, lat)), colour="grey50", fill=NA) +
 
-# 
+##
 # Map of coefficient values 
 coef_limits <- range(month_coefs_df$value)
 monthsurface <- function(mon) {

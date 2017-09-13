@@ -115,10 +115,11 @@ shape(aaply(x, c(1,2,3), function(y) list(y=mean(y)))) # dim(1) x dim(2) x dim(3
 # - c(2,3) : longitudinal statistics (at each time step)
 
 # TODO
+# - aaply() with cell neighborhood 
 # with 4 dimension 
 # - spatio temporal ensembles 
 # - multivariate spatio-temporal ensembles 
-# aaply() with cell neighborhood 
+# 
 
 # Examples 
 aaply(ozone, 1, each(min, max)) # Compute latitudinal statistics
